@@ -9,6 +9,10 @@ resource "azurerm_storage_account" "sta" {
     
 }
 
+data "azurerm_client_config" "current" {
+
+}
+
 resource "azurerm_storage_container" "stc" {
   
         name                  = "content"
@@ -63,7 +67,7 @@ resource "azurerm_linux_function_app" "function" {
 
     site_config {
         application_stack {
-            python_version = "3.8"
+            python_version = "3.11"
         }
         cors {
                 allowed_origins = ["https://portal.azure.com", "https://${azurerm_storage_account.sta.name}.z13.web.core.windows.net"]
@@ -73,11 +77,11 @@ resource "azurerm_linux_function_app" "function" {
     app_settings = {
         FUNCTIONS_WORKER_RUNTIME = "python"
         WEBSITE_RUN_FROM_PACKAGE = "1"
-        COSMOSDB_ACCOUNT_ID      = var.cosmosdb_account_id
-        cosmosdb_database_name   = var.cosmosdb_database_name
-        cosmosdb_container_name  = var.cosmosdb_container_name
-        cosmosdb_key             = var.cosmosdb_account_primary_key
-        cosmosdb_endpoint        = var.cosmosdb_account_endpoint
+        cosmosdb_account_id      = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.cosmosdb_account_id.id})"
+        cosmosdb_database_name   = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.cosmosdb_database_name.id})"
+        cosmosdb_container_name  = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.cosmosdb_container_name.id})"
+        cosmosdb_key             = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.cosmosdb_key.id})"
+        cosmosdb_endpoint        = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.cosmosdb_endpoint.id})"
         // add code to deploy app code package to function app
 
 
@@ -92,7 +96,7 @@ resource "azurerm_linux_function_app" "function" {
 // connect function app to cosmosdb
 resource "azurerm_role_assignment" "func_cosmosdb" {
     principal_id   = azurerm_linux_function_app.function.identity[0].principal_id
-    role_definition_name = "Cosmos DB Account Reader Role"
+    role_definition_name = "Cosmos DB Built-in Data Contributor"
     scope          = var.cosmosdb_account_id
 }
 
@@ -102,4 +106,62 @@ resource "azurerm_role_assignment" "funcapp_storageaccount" {
   role_definition_name = "Storage Blob Data Contributor"
   principal_id   = azurerm_linux_function_app.function.identity[0].principal_id
 }
+
+
+// create key vault and secrets for function app to access cosmosdb
+resource "azurerm_key_vault" "kv" {
+    name                = "${var.project_name}-${var.environment}-kv"
+    location            = var.location
+    resource_group_name = var.resource_group_name
+    tenant_id           = data.azurerm_client_config.current.tenant_id
+    enabled_for_disk_encryption = true
+    soft_delete_retention_days = 7
+    purge_protection_enabled = true
+    sku_name            = "standard"
+   
+}
+
+
+// create access policy for function app to access key vault secrets
+resource "azurerm_key_vault_access_policy" "funcapp_kv_access" {
+    key_vault_id = azurerm_key_vault.kv.id
+    tenant_id    = data.azurerm_client_config.current.tenant_id
+    object_id    = azurerm_linux_function_app.function.identity[0].principal_id
+    secret_permissions = [
+        "Get",
+        "List"
+    ]
+}
+
+resource "azurerm_key_vault_secret" "cosmosdb_key" {
+    name         = "CosmosDBKey"
+    value        = var.cosmosdb_account_primary_key
+    key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "cosmosdb_account_id" {
+    name         = "CosmosDBAccountId"
+    value        = var.cosmosdb_account_id
+    key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "cosmosdb_endpoint" {
+    name         = "CosmosDBEndpoint"
+    value        = var.cosmosdb_account_endpoint
+    key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "cosmosdb_container_name" {
+    name         = "CosmosDBContainerName"
+    value        = var.cosmosdb_container_name
+    key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "cosmosdb_database_name" {
+    name         = "CosmosDBDatabaseName"
+    value        = var.cosmosdb_database_name
+    key_vault_id = azurerm_key_vault.kv.id
+}
+
+
 
