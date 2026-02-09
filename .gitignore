@@ -42,7 +42,6 @@ Thumbs.db
 *~
 # Ignore generated documentation
 docs/
-*.md
 # Ignore test output files
 test-output/
 # Ignore coverage reports

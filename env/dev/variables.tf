@@ -38,7 +38,7 @@ variable "environment" {
 #   type        = string
 # }
 
-# variable "cosmosdb_container_name" {
+# variable "cosmosdb_containe   r_name" {
 #   description = "The name of the Cosmos DB container"
 #   type        = string
 # }

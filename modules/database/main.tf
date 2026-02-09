@@ -4,6 +4,7 @@ resource "azurerm_cosmosdb_account" "cosmosdb" {
     resource_group_name = var.resource_group_name
     offer_type          = "Standard"
     kind                = "GlobalDocumentDB"
+    public_network_access_enabled = false
     consistency_policy {
         consistency_level       = "Session"
     }
@@ -31,6 +32,8 @@ resource "azurerm_cosmosdb_sql_container" "sqlcnt" {
     database_name      = azurerm_cosmosdb_sql_database.sqldb.name
     partition_key_paths = ["/userId"]
 }
+
+
 
 
 

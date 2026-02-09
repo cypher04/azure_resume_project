@@ -64,6 +64,7 @@ resource "azurerm_linux_function_app" "function" {
     service_plan_id     = azurerm_service_plan.asp.id
     storage_account_name = azurerm_storage_account.func_sta.name
     storage_account_access_key = azurerm_storage_account.func_sta.primary_access_key
+    public_network_access_enabled = false
 
     site_config {
         application_stack {
@@ -82,6 +83,7 @@ resource "azurerm_linux_function_app" "function" {
         cosmosdb_container_name  = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.cosmosdb_container_name.id})"
         cosmosdb_key             = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.cosmosdb_key.id})"
         cosmosdb_endpoint        = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.cosmosdb_endpoint.id})"
+    
         // add code to deploy app code package to function app
 
 
@@ -91,6 +93,11 @@ resource "azurerm_linux_function_app" "function" {
         type = "SystemAssigned"
     }
 
+}
+
+resource "azurerm_app_service_virtual_network_swift_connection" "funcapp_vnet_integration" {
+    app_service_id =      azurerm_linux_function_app.function.id
+    subnet_id           = azurerm_subnet.spoke-subnet.id
 }
 
 // connect function app to cosmosdb
