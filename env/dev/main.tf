@@ -14,6 +14,7 @@ module "compute" {
   project_name        = var.project_name
   environment         = var.environment
   location            = var.location
+  spoke_subnet_ids      = module.networking.spoke_subnet_ids
   resource_group_name      = azurerm_resource_group.rg-mainn.name
   storage_account_for_funcapp = module.compute.storage_account_for_funcapp
   cosmosdb_account_id = module.database.cosmosdb_account_id
@@ -21,6 +22,7 @@ module "compute" {
   cosmosdb_account_endpoint = module.database.cosmosdb_account_endpoint
   cosmosdb_database_name = module.database.cosmosdb_database_name
   cosmosdb_container_name = module.database.cosmosdb_container_name
+  cosmosdb_account_name = module.database.cosmosdb_account_name
 
   depends_on = [ module.database ]
 }
