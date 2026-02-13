@@ -5,5 +5,7 @@
 			"path": "../../../azure_projects_nig"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"debug.internalConsoleOptions": "neverOpen"
+	}
 }

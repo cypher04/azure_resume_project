@@ -29,3 +29,5 @@ __azurite_db*__.json
 # OS
 .DS_Store
 Thumbs.db
+
+.python_packages

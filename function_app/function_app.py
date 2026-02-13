@@ -12,8 +12,8 @@ def get_cosmos_client():
     Initialize and return Cosmos DB client.
     Uses environment variables for connection details.
     """
-    endpoint = os.environ.get("COSMOS_ENDPOINT")
-    key = os.environ.get("COSMOS_KEY")
+    endpoint = os.environ.get("cosmosdb_endpoint")
+    key = os.environ.get("cosmosdb_key")
     
     if not endpoint or not key:
         raise ValueError("COSMOS_ENDPOINT and COSMOS_KEY environment variables must be set")
@@ -33,8 +33,8 @@ def visitor_counter(req: func.HttpRequest) -> func.HttpResponse:
     try:
         client = get_cosmos_client()
         
-        database_name = os.environ.get("COSMOS_DATABASE_NAME", "resume-dev-sqldb")
-        container_name = os.environ.get("COSMOS_CONTAINER_NAME", "resume-dev-sqlcnt")
+        database_name = os.environ.get("cosmosdb_database_name", "resume-dev-sqldb")
+        container_name = os.environ.get("cosmosdb_container_name", "resume-dev-sqlcnt")
         
         database = client.get_database_client(database_name)
         container = database.get_container_client(container_name)
@@ -105,8 +105,8 @@ def get_resume_data(req: func.HttpRequest) -> func.HttpResponse:
     try:
         client = get_cosmos_client()
         
-        database_name = os.environ.get("COSMOS_DATABASE_NAME", "resume-dev-sqldb")
-        container_name = os.environ.get("COSMOS_CONTAINER_NAME", "resume-dev-sqlcnt")
+        database_name = os.environ.get("cosmosdb_database_name", "resume-dev-sqldb")
+        container_name = os.environ.get("cosmosdb_container_name", "resume-dev-sqlcnt")
         
         database = client.get_database_client(database_name)
         container = database.get_container_client(container_name)

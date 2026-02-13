@@ -38,3 +38,6 @@ variable "spoke_subnet_prefixes" {
     description = "The address prefixes for the spoke subnets"
     type        = map(string)
 }
+
+
+

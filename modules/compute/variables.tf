@@ -54,4 +54,12 @@ variable "cosmosdb_account_endpoint" {
 }
 
 
+variable "spoke_subnet_ids" {
+  description = "The IDs of the spoke subnets for virtual network integration"
+  type        = map(string)
+}
 
+variable "cosmosdb_account_name" {
+  description = "The name of the Cosmos DB account"
+  type        = string
+}
