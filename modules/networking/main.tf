@@ -44,7 +44,22 @@ resource "azurerm_subnet" "spoke-subnet-3" {
     name                 = "spoke-subnet-3"
     resource_group_name  = var.resource_group_name
     virtual_network_name = azurerm_virtual_network.spoke_vnet.name
-    address_prefixes     = [var.spoke_subnet_prefixes["function"]]  
+    address_prefixes     = [var.spoke_subnet_prefixes["function"]] 
+
+    delegation {
+        name = "delegation"
+        service_delegation {
+            name = "Microsoft.Web/serverFarms"
+            actions = [
+                "Microsoft.Network/virtualNetworks/subnets/action",
+                "Microsoft.Network/virtualNetworks/subnets/join/action",
+                "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action",
+                "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action",
+                "Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action",
+                "Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action"
+            ]
+        }
+    }   
 }
 
 resource "azurerm_virtual_network_peering" "hub_to_spoke" {

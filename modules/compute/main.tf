@@ -64,7 +64,7 @@ resource "azurerm_linux_function_app" "function" {
     service_plan_id     = azurerm_service_plan.asp.id
     storage_account_name = azurerm_storage_account.func_sta.name
     storage_account_access_key = azurerm_storage_account.func_sta.primary_access_key
-    public_network_access_enabled = false
+    public_network_access_enabled = true
     
 
     site_config {
@@ -90,17 +90,19 @@ resource "azurerm_linux_function_app" "function" {
 
     }
 
+    virtual_network_subnet_id = var.spoke_subnet_ids["function_subnet_id"]
+
     identity {
         type = "SystemAssigned"
     }
 
 }
 
-resource "azurerm_app_service_virtual_network_swift_connection" "funcapp_vnet_integration" {
-    app_service_id =      azurerm_linux_function_app.function.id
-    subnet_id           =  var.spoke_subnet_ids["function_subnet_id"]
-    depends_on = [ azurerm_service_plan.asp ]
-}
+# resource "azurerm_app_service_virtual_network_swift_connection" "funcapp_vnet_integration" {
+#     app_service_id =      azurerm_linux_function_app.function.id
+#     subnet_id           =  var.spoke_subnet_ids["function_subnet_id"]
+#     depends_on = [ azurerm_service_plan.asp ]
+# }
 
 // connect function app to cosmosdb
 # resource "azurerm_role_assignment" "func_cosmosdb" {
@@ -124,20 +126,20 @@ resource "azurerm_app_service_virtual_network_swift_connection" "funcapp_vnet_in
   
 # }
 
-resource "azurerm_cosmosdb_sql_role_definition" "func_cosmosdb_role" {
-    name        = "Cosmos DB Built-in Data Contributor"
-    resource_group_name = var.resource_group_name
-    account_name = var.cosmosdb_account_name
-    assignable_scopes = [var.cosmosdb_account_id]
-    permissions {
-        data_actions = [
-            "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/read",
-            "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/write",
-            "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/delete"
-        ]
-    }
+# resource "azurerm_cosmosdb_sql_role_definition" "func_cosmosdb_role" {
+#     name        = "Cosmos DB Built-in Data Contributor"
+#     resource_group_name = var.resource_group_name
+#     account_name = var.cosmosdb_account_name
+#     assignable_scopes = [var.cosmosdb_account_id]
+#     permissions {
+#         data_actions = [
+#             "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/read",
+#             "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/write",
+#             "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/delete"
+#         ]
+#     }
   
-}
+# }
 
 # resource "azurerm_role_assignment" "func_cosmosdb" {
 #     principal_id   = azurerm_linux_function_app.function.identity[0].principal_id
@@ -147,7 +149,7 @@ resource "azurerm_cosmosdb_sql_role_definition" "func_cosmosdb_role" {
 # }
 
 resource "azurerm_cosmosdb_sql_role_assignment" "func_cosmosdb_assignment" {
-    role_definition_id = azurerm_cosmosdb_sql_role_definition.func_cosmosdb_role.id
+    role_definition_id = "${var.cosmosdb_account_id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002"
     principal_id       = azurerm_linux_function_app.function.identity[0].principal_id
     scope              = var.cosmosdb_account_id
     account_name = var.cosmosdb_account_name
