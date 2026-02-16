@@ -131,54 +131,36 @@ skillTags.forEach(tag => {
 });
 
 // Visitor Counter - Azure Cosmos DB Integration
-
-const API_BASE_URL = 'https://<your-function-app>.azurewebsites.net/api';
-
-async function updateVisitorCount() {
-    const response = await fetch(`${API_BASE_URL}/visitor`, { method: 'POST' });
-    const data = await response.json();
-    document.getElementById('visitor-count').textContent = data.count;
-}
-
-document.addEventListener('DOMContentLoaded', updateVisitorCount);
-
-
-
-
-// Replace YOUR_API_ENDPOINT with your Azure Function URL that connects to Cosmos DB
-const VISITOR_API_ENDPOINT = 'https://your-function-app.azurewebsites.net/api/visitor-counter';
+// Replace <your-function-app> with your actual Azure Function App name
+const API_BASE_URL = 'https://resumeproject-dev-funcapp.azurewebsites.net/api';
 
 async function updateVisitorCount() {
     const visitorCountElement = document.getElementById('visitor-count');
-    
+
     try {
-        // POST request to increment and get the current count
-        const response = await fetch(VISITOR_API_ENDPOINT, {
+        const response = await fetch(`${API_BASE_URL}/visitor`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to fetch visitor count');
         }
-        
+
         const data = await response.json();
-        
+
         if (visitorCountElement) {
-            // Animate the count update
             visitorCountElement.classList.add('count-updated');
             visitorCountElement.textContent = `${data.count.toLocaleString()} visitors`;
-            
+
             setTimeout(() => {
                 visitorCountElement.classList.remove('count-updated');
             }, 300);
         }
     } catch (error) {
         console.error('Error updating visitor count:', error);
-        
-        // Fallback: Show a placeholder or use localStorage for demo
+
+        // Fallback: use localStorage when API is unavailable
         if (visitorCountElement) {
             const localCount = parseInt(localStorage.getItem('visitorCount') || '0') + 1;
             localStorage.setItem('visitorCount', localCount.toString());
@@ -187,7 +169,6 @@ async function updateVisitorCount() {
     }
 }
 
-// Fetch visitor count on page load
 document.addEventListener('DOMContentLoaded', updateVisitorCount);
 
 
